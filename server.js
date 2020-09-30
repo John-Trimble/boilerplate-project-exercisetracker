@@ -1,22 +1,33 @@
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
-
 const cors = require('cors')
 
 const mongoose = require('mongoose')
-mongoose.connect(process.env.MLAB_URI || 'mongodb://localhost/exercise-track' )
+mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://John:3216@fcc-cluster.edllc.mongodb.net/Excercise-Tracker?retryWrites=true&w=majority' )
+
+var db = mongoose.connection;
+db.on("error", console.error.bind(console, "DATABASE ERROR"))
+db.once("open", console.log.bind(console, "DATABASE CONNECTED"))
+
+const Schema = new mongoose.Schema({
+  
+})
 
 app.use(cors())
 
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
 
-
 app.use(express.static('public'))
+
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
+
+app.post("/api/exercise/new-user", (req, res) => {
+  
+})
 
 
 // Not found middleware

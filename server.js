@@ -2,17 +2,26 @@ const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const shortId = require('shortid')
 
 const mongoose = require('mongoose')
-mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://John:3216@fcc-cluster.edllc.mongodb.net/Excercise-Tracker?retryWrites=true&w=majority' )
-
+mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://John:3216@fcc-cluster.edllc.mongodb.net/Excercise-Tracker?retryWrites=true&w=majority', { useNewUrlParser: true, useFindAndModify: true, useUnifiedTopology: true })
 var db = mongoose.connection;
 db.on("error", console.error.bind(console, "DATABASE ERROR"))
 db.once("open", console.log.bind(console, "DATABASE CONNECTED"))
 
-const Schema = new mongoose.Schema({
-  
+const ExerciseSchema = new mongoose.Schema({
+  duration: {type: Number, required: true},
+  descripition: {type: String, required: true},
+  date: {type: Date, default: new Date()}
 })
+
+const UserSchema = new mongoose.Schema({
+  username: {type: String, required: true},
+  id: {type: String, required: true, unique: true},
+  exercises: [ExerciseSchema]
+})
+const Users = mongoose.model("Users", UserSchema);
 
 app.use(cors())
 
@@ -26,9 +35,21 @@ app.get('/', (req, res) => {
 });
 
 app.post("/api/exercise/new-user", (req, res) => {
-  
+  Users.find({username: req.body.username}, (err, data) => {
+    console.log(err, data)
+    if (err) return res.send({error: "Failed to fetch data"})
+    if (data.length != 0) return res.send({error: "Username taken"})
+    let user = new Users({username: req.body.username, id: shortId.generate()})
+    user.save((e, d) => {
+      if (e) return console.error.bind(console, "Failed to add new user")
+      res.send({username: d.username, _id: d.id})
+    })
+  })
 })
 
+app.post("/api/exercise/add", (req, res) => {
+  
+})
 
 // Not found middleware
 app.use((req, res, next) => {

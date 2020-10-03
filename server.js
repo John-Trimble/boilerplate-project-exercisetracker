@@ -47,8 +47,22 @@ app.post("/api/exercise/new-user", (req, res) => {
   })
 })
 
+app.get("/api/exercise/users", (req, res) => {
+  Users.find({}, (err, data) => {
+    if (err) return res.send({error: "Failed to fetch users"})
+    res.send(data.map(item => {return {username: item.username, _id: item.id}}))
+  })
+})
+
 app.post("/api/exercise/add", (req, res) => {
-  
+  Users.findOne({id: req.body.userId}, (err, data) => {
+    if (err || data == null) return res.send({error: "Failed to find user"})
+    Users.findOneAndUpdate({id: req.body.userId}, {$push: {exercises: {duration: req.body.duration, descripition: req.body.description, date: new Date(req.body.date == ""?Date.now():req.body.date)}}}, {new: true}, (e, d) => {
+      if (e) return res.send({error: "Failed to update user"})
+      let {id, username, exercises} = d
+      res.send({id, username, exercises})
+    })
+  })
 })
 
 // Not found middleware

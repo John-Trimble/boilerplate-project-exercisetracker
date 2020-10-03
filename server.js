@@ -12,7 +12,7 @@ db.once("open", console.log.bind(console, "DATABASE CONNECTED"))
 
 const ExerciseSchema = new mongoose.Schema({
   duration: {type: Number, required: true},
-  descripition: {type: String, required: true},
+  description: {type: String, required: true},
   date: {type: Date, default: new Date()}
 })
 
@@ -57,7 +57,9 @@ app.get("/api/exercise/users", (req, res) => {
 app.post("/api/exercise/add", (req, res) => {
   Users.findOne({id: req.body.userId}, (err, data) => {
     if (err || data == null) return res.send({error: "Failed to find user"})
-    Users.findOneAndUpdate({id: req.body.userId}, {$push: {exercises: {duration: req.body.duration, descripition: req.body.description, date: new Date(req.body.date == ""?Date.now():req.body.date)}}}, {new: true}, (e, d) => {
+    let {duration, description} = req.body;
+    let exDate = new Date(req.body.date == ""?Date.now():req.body.date)
+    Users.findOneAndUpdate({id: req.body.userId}, {$push: {exercises: {duration, description, date: exDate}}}, {new: true}, (e, d) => {
       if (e) return res.send({error: "Failed to update user"})
       let {id, username, exercises} = d
       res.send({id, username, exercises})
